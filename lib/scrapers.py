@@ -357,7 +357,11 @@ class TotallyCoolPix(BasePlugin):
             img = photo.find('img')
             if not img:
                 continue
-            description = self._collapse(photo.find('p', {'class': 'info-txt'}).contents)
+            description = photo.find('p', {'class': 'info-txt'})
+            if not description:
+                # This is the title image, which is duplicated later in the body with a description
+                continue
+            description = self._collapse(description.contents)
             self._photos[album_url].append({
                 'title': '%d - %s' % (id + 1, album_title),
                 'album_title': album_title,
