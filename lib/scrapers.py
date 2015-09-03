@@ -310,9 +310,18 @@ class TotallyCoolPix(BasePlugin):
     _title = 'TotallyCoolPix.com'
 
     def _get_albums(self):
-        self._albums = []
         url = 'http://totallycoolpix.com/'
-        tree = self._get_tree(url)
+        try:
+            tree = self._get_tree(url)
+        except urllib2.HTTPError as er:
+            if er.code == 302:
+                # Happens intermittently and may work the next time around after a few minutes.
+                self.log('Infinite redirect detected! %s' % url)
+                return []
+            else:
+                raise
+
+        self._albums = []
         albums = tree.findAll('div', {'class': 'item'})
         for id, album in enumerate(albums):
             if not album.find('a', {'class': 'open'}):
@@ -332,8 +341,16 @@ class TotallyCoolPix(BasePlugin):
         return self._albums
 
     def _get_photos(self, album_url):
+        try:
+            tree = self._get_tree(album_url)
+        except urllib2.HTTPError as er:
+            if er.code == 302:
+                self.log('Infinite redirect detected! %s' % album_url)
+                return []
+            else:
+                raise
+
         self._photos[album_url] = []
-        tree = self._get_tree(album_url)
         album_title = tree.find('h2').string
         for id, photo in enumerate(tree.findAll('div', {'class': 'image'})):
             print photo
