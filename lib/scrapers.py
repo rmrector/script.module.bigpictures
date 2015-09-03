@@ -351,6 +351,7 @@ class TotallyCoolPix(BasePlugin):
                 raise
 
         self._photos[album_url] = []
+        tree = tree.find('div', {'class': 'main-content single-view'})
         album_title = tree.find('h2').string
         for id, photo in enumerate(tree.findAll('div', {'class': 'image'})):
             img = photo.find('img')
